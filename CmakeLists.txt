@@ -22,4 +22,8 @@ set(MAIN "${PROJECT}_exec")
 find_package(Qt6 REQUIRED COMPONENTS Widgets
 									 Gui)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/src)
+include(CTest)
+
+add_subdirectory(src)
+add_subdirectory(thirdParty/googletest)
+add_subdirectory(tests)
