@@ -3,9 +3,13 @@
 
 #include <QPainter>
 #include <QPaintEvent>
+#include <QMouseEvent>
 
-CanvasView::CanvasView(QWidget* parent) {
 
+
+CanvasView::CanvasView(QWidget* parent)
+{
+	setMouseTracking(true);
 }
 
 void CanvasView::paintEvent(QPaintEvent* e)
@@ -16,6 +20,32 @@ void CanvasView::paintEvent(QPaintEvent* e)
 
 	p.fillRect(r, Qt::darkGray);
 
-	p.drawLine(0, 0, 100, 100);
+	for (auto& l : lines) {
+		l.draw(&p);
+	}
 	
+}
+
+void CanvasView::mousePressEvent(QMouseEvent* e)
+{
+	if (e->button() == Qt::LeftButton) {
+		if (!isDrawing) {
+			isDrawing = true;
+			Line l(Point{ (double)e->x(), (double)e->y() });
+			lines.push_back(l);
+		} else {
+			isDrawing = false;
+		}
+	}
+
+}
+
+void CanvasView::mouseMoveEvent(QMouseEvent* e)
+{
+	if (isDrawing) {
+		lines.back().setEnd(Point{ (double)e->x(), (double)e->y()} );
+		repaint();
+	} else {
+
+	}
 }

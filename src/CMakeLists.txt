@@ -1,8 +1,12 @@
 set(SOURCES main.cpp
-			"CanvasView.cpp"
+			CanvasView.cpp
+			Line.cpp
 			)
 
-set(HEADERS "CanvasView.h")
+set(HEADERS 
+			CanvasView.h
+			Line.h
+			)
 
 
 add_executable(${MAIN} ${HEADERS} ${SOURCES})
