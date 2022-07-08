@@ -20,9 +20,11 @@ void CanvasView::paintEvent(QPaintEvent* e)
 
 	p.fillRect(r, Qt::darkGray);
 
-	for (auto& l : lines) {
-		l.draw(&p);
+	for (auto& l : shapes) {
+		l->draw(&p);
 	}
+
+	if (isDrawing) tempShape->draw(&p);
 	
 }
 
@@ -31,10 +33,12 @@ void CanvasView::mousePressEvent(QMouseEvent* e)
 	if (e->button() == Qt::LeftButton) {
 		if (!isDrawing) {
 			isDrawing = true;
-			Line l(Point{ (double)e->x(), (double)e->y() });
-			lines.push_back(l);
+			tempShape = std::make_unique<Circle>(Point{ (double)e->x(), (double)e->y() });
+			
 		} else {
 			isDrawing = false;
+			shapes.push_back(std::move(tempShape));
+			qDebug() << "Number of items in vector: " << shapes.size();
 		}
 	}
 
@@ -43,7 +47,7 @@ void CanvasView::mousePressEvent(QMouseEvent* e)
 void CanvasView::mouseMoveEvent(QMouseEvent* e)
 {
 	if (isDrawing) {
-		lines.back().setEnd(Point{ (double)e->x(), (double)e->y()} );
+		tempShape->setNextNode(Point{ (double)e->x(), (double)e->y() });
 		repaint();
 	} else {
 

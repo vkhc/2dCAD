@@ -5,6 +5,7 @@
 #include <QWidget>
 
 #include <vector>
+#include <memory>
 
 class CanvasView : public QWidget {
 public:
@@ -16,7 +17,9 @@ protected:
 	void mouseMoveEvent(QMouseEvent* e) override;
 
 private:
-	std::vector<Line> lines;
+	std::vector<std::unique_ptr<Shape>> shapes;
+
+	std::unique_ptr<Shape> tempShape;
 
 	bool isDrawing = false;
 };
