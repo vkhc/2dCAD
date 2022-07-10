@@ -33,7 +33,7 @@ void CanvasView::mousePressEvent(QMouseEvent* e)
 	if (e->button() == Qt::LeftButton) {
 		if (!isDrawing) {
 			isDrawing = true;
-			tempShape = std::make_unique<Circle>(Point{ (double)e->x(), (double)e->y() });
+			tempShape = std::make_unique<Line>(Point{ (double)e->position().x(), (double)e->position().y() });
 			
 		} else {
 			isDrawing = false;
@@ -47,7 +47,7 @@ void CanvasView::mousePressEvent(QMouseEvent* e)
 void CanvasView::mouseMoveEvent(QMouseEvent* e)
 {
 	if (isDrawing) {
-		tempShape->setNextNode(Point{ (double)e->x(), (double)e->y() });
+		tempShape->setNextNode(Point{ (double)e->position().x(), (double)e->position().y() });
 		repaint();
 	} else {
 
