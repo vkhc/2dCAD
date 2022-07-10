@@ -16,8 +16,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(MAIN "${PROJECT}_exec")
 
 # path to qt6
-# set (QT_CONFIG_PATH path_to_qt_cmake_folder)
-# list(APPEND CMAKE_PREFIX_PATH ${QT_CONFIG_PATH})
+set (QT_CONFIG_PATH /home/vk/Qt/6.3.1/gcc_64/lib/cmake)
+list(APPEND CMAKE_PREFIX_PATH ${QT_CONFIG_PATH})
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets
 									 Gui)

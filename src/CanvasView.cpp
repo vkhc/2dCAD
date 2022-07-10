@@ -1,4 +1,4 @@
-#include "canvasView.h"
+#include "CanvasView.h"
 
 
 #include <QPainter>

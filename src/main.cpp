@@ -2,7 +2,7 @@
 
 #include <QApplication>
 
-#include <canvasView.h>
+#include <CanvasView.h>
 
 
 
