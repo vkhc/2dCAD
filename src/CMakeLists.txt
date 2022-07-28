@@ -1,11 +1,13 @@
 set(SOURCES main.cpp
 			CanvasView.cpp
-			Line.cpp
+			"Shapes.cpp"
+			#Drawing.cpp
 			)
 
 set(HEADERS 
 			CanvasView.h
-			Line.h
+			"Shapes.h"
+			Drawing.h
 			)
 
 
