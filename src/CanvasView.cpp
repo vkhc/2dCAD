@@ -11,9 +11,9 @@ void CanvasView::drw(Shape* s, QPainter& p)
 {
 	if (s->type() == Shape_t::circle) {
 		auto circle = static_cast<Circle*>(s);
-		qDebug() << "center [on Drawing] x: " << circle->center.x << "; y: " << circle->center.y
-			<< " [on Screen] : " << fromDrawing(circle->center)
-			<< "\n radius: " << circle->radius << fromDrawing(circle->radius);
+		//qDebug() << "center [on Drawing] x: " << circle->center.x << "; y: " << circle->center.y
+		//	<< " [on Screen] : " << fromDrawing(circle->center)
+		//	<< "\n radius: " << circle->radius << fromDrawing(circle->radius);
 		p.drawEllipse(fromDrawing(circle->center), fromDrawing(circle->radius), fromDrawing(circle->radius));
 	}
 }
@@ -53,6 +53,7 @@ void CanvasView::paintEvent(QPaintEvent* e)
 
 void CanvasView::mousePressEvent(QMouseEvent* e)
 {
+	lastPos = e->pos();
 	auto pScreen = e->pos();
 	auto pReal = toDrawing(pScreen);
 	if (e->button() == Qt::LeftButton) {
@@ -60,7 +61,7 @@ void CanvasView::mousePressEvent(QMouseEvent* e)
 			isDrawing = true;
 			tempShape = std::make_unique<LineCreator>(this);
 			tempShape->setNextNode(pScreen);
-
+			mouseLeftDown = true;
 		} else {
 			isDrawing = false;
 //			drawing->add(tempShape);
@@ -69,14 +70,30 @@ void CanvasView::mousePressEvent(QMouseEvent* e)
 	
 }
 
+void CanvasView::mouseReleaseEvent(QMouseEvent* e)
+{
+	mouseLeftDown = false;
+}
+
 void CanvasView::mouseMoveEvent(QMouseEvent* e)
 {
+	
+
 	if (isDrawing) {
 		tempShape->setNextNode(e->pos());
 		repaint();
-	} else {
+	//} else {
 
 	}
+
+	if (e->buttons() & Qt::LeftButton) {
+		offsetH += e->pos().x() - lastPos.x();
+		offsetV += e->pos().y() - lastPos.y();
+		qDebug() << offsetH << " " << offsetV;
+		repaint();
+	}
+
+	lastPos = e->pos();
 
 }
 
