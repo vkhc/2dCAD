@@ -102,6 +102,21 @@ void CanvasView::resizeEvent(QResizeEvent* e)
 	zoomRatio = 2;
 }
 
+void CanvasView::wheelEvent(QWheelEvent* e)
+{
+	QPoint numDegrees = e->angleDelta() / 8;
+    QPoint d = e->position().toPoint() - QPoint(width(), height());
+
+    double factor = 0.8; // Magnification factor
+    if (numDegrees.y() < 0) factor = 1 / factor;
+    
+    float m = (1-factor) / factor;
+
+	zoomRatio *= factor;
+
+	repaint();
+}
+
 #define mN
 
 Point CanvasView::toDrawing(const QPoint& pointOnScreen)
