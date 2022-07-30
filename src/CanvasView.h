@@ -63,8 +63,7 @@ private:
 	bool isDrawing = false;
 
 	int viewLen = 100;
-	int offsetH;
-	int offsetV;
+	QPoint offset;
 	double zoomRatio;
 
 	QPoint lastPos;

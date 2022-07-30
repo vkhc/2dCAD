@@ -25,11 +25,11 @@ CanvasView::CanvasView(QWidget* parent)
 
 	drawing = std::make_unique<Drawing>();
 		std::unique_ptr<Shape> circle = std::make_unique<Circle>(Point{ 0, 0 });
-		circle->setNextNode({ 15, 20 });
+		circle->setNextNode({ 0, 30 });
 		drawing->add(circle);
 	
-	offsetH = width() / 2;
-	offsetV = height() / 2;
+	offset.setX(width() / 2);
+	offset.setY(height() / 2);
 
 }
 
@@ -49,6 +49,10 @@ void CanvasView::paintEvent(QPaintEvent* e)
 	for (const auto& s : drawing->shapes) {
 		drw(s.get(), p);
 	}
+
+	auto b = QBrush(Qt::red);
+	p.setBrush(b);
+	p.drawEllipse(width() / 2-2, height() / 2-2, 4, 4);
 }
 
 void CanvasView::mousePressEvent(QMouseEvent* e)
@@ -87,9 +91,9 @@ void CanvasView::mouseMoveEvent(QMouseEvent* e)
 	}
 
 	if (e->buttons() & Qt::LeftButton) {
-		offsetH += e->pos().x() - lastPos.x();
-		offsetV += e->pos().y() - lastPos.y();
-		qDebug() << offsetH << " " << offsetV;
+		offset += e->pos() - lastPos;
+
+
 		repaint();
 	}
 
@@ -104,76 +108,34 @@ void CanvasView::resizeEvent(QResizeEvent* e)
 
 void CanvasView::wheelEvent(QWheelEvent* e)
 {
-	QPoint numDegrees = e->angleDelta() / 8;
-    QPoint d = e->position().toPoint() - QPoint(width(), height());
+    double factor = 1.2; // Magnification factor
 
-    double factor = 0.8; // Magnification factor
+	QPoint numDegrees = e->angleDelta() / 8;
     if (numDegrees.y() < 0) factor = 1 / factor;
-    
-    float m = (1-factor) / factor;
 
 	zoomRatio *= factor;
 
+    QPoint d = offset - e->position().toPoint();
+	offset +=  d * (factor -1);
+	
 	repaint();
 }
 
-#define mN
-
 Point CanvasView::toDrawing(const QPoint& pointOnScreen)
-{
-
-	int scrX = pointOnScreen.x();
-	int scrY = pointOnScreen.y();
-
-	int widgetWidth = width();
-	int widgetHeight = height();
-
-	double viewWidth = 100;
-	double viewHeight = 100;
-
-#ifdef N
-	double x = -viewWidth / 2 + (1.0 * scrX / widgetWidth) * viewWidth;
-	double y = viewHeight / 2 - (1.0 * scrY / widgetHeight) * viewHeight;
-#else
-	double x = -offsetH + 1.0 * scrX / zoomRatio;
-	double y = offsetV / 2 - 1.0 * scrY / zoomRatio;
-#endif
-	
-	return Point{ x, y };
+{	
+	return Point{ -offset.x() + 1. * pointOnScreen.x() / zoomRatio,
+				  offset.y() / 2 - 1. * pointOnScreen.y() / zoomRatio };
 }
 
 QPoint CanvasView::fromDrawing(const Point& drawingPoint)
 {
-	int widgetWidth = width();
-	int widgetHeight = height();
-
-	double viewWidth = 100;
-	double viewHeight = 100;
-
-
-#ifdef N
-	int x = (drawingPoint.x + 1. * viewWidth / 2) / viewWidth * widgetWidth;
-	int y = - (drawingPoint.y - 1. * viewHeight / 2) / viewHeight * widgetHeight;
-#else
-	int sub = (drawingPoint.x + 1. * width() / 2);
-	int x = drawingPoint.x * zoomRatio + offsetH;
-	int y = -drawingPoint.y * zoomRatio + offsetV;
-#endif
-
-	return QPoint(x, y);
+	return QPoint{ int(drawingPoint.x * zoomRatio + offset.x()),
+				   int(-drawingPoint.y * zoomRatio + offset.y()) };
 }
 
 int CanvasView::fromDrawing(const double& l)
 {
-	int widgetWidth = width();
-	int widgetHeight = height();
-
-	double viewWidth = 100;
-	double viewHeight = 100;
-
-	int x = l * zoomRatio;
-
-	return x;
+	return l * zoomRatio;
 }
 
 void LineCreator::draw(QPainter* p) const
