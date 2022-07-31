@@ -44,7 +44,6 @@ public:
 	Point toDrawing(const QPoint& pointOnScreen);
 	QPoint fromDrawing(const Point& drawingPoint);
 	int fromDrawing(const double& l);
-	void drw(Shape* s, QPainter& p);
 
 protected:
 	void paintEvent(QPaintEvent* e) override;
@@ -54,6 +53,9 @@ protected:
 	void wheelEvent(QWheelEvent* e) override;
 	void resizeEvent(QResizeEvent* e) override;
 
+private:
+	void drw(Shape* s, QPainter& p);
+	void drawGrid(QPainter& p);
 
 
 private:

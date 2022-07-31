@@ -14,8 +14,45 @@ void CanvasView::drw(Shape* s, QPainter& p)
 		//qDebug() << "center [on Drawing] x: " << circle->center.x << "; y: " << circle->center.y
 		//	<< " [on Screen] : " << fromDrawing(circle->center)
 		//	<< "\n radius: " << circle->radius << fromDrawing(circle->radius);
+		p.setPen(Qt::lightGray);
 		p.drawEllipse(fromDrawing(circle->center), fromDrawing(circle->radius), fromDrawing(circle->radius));
 	}
+}
+
+void CanvasView::drawGrid(QPainter& p)
+{
+	auto originAxes = QColor(103, 92, 108);
+	auto mainGridLines = QColor(63, 72, 88);
+	auto fineGridLines = QColor(33, 42, 58);
+
+	int mainStep = 100;
+	int fineStep = mainStep / 5;
+	
+	auto origin = fromDrawing({ 0, 0 });
+
+	int vertInitPoint = origin.x() % mainStep;
+	int horInitPoint = origin.y() % mainStep;
+	
+	p.setPen(fineGridLines);
+	for (int i = vertInitPoint; i < width() ; i += fineStep) {
+		p.drawLine(i, 0, i, height());
+	}
+	for (int i = horInitPoint; i < height() ; i += fineStep) {
+		p.drawLine(0, i, width(), i);
+	}
+
+	p.setPen(mainGridLines);
+	for (int i = vertInitPoint; i < width() ; i += mainStep) {
+		p.drawLine(i, 0, i, height());
+	}
+	for (int i = horInitPoint; i < height() ; i += mainStep) {
+		p.drawLine(0, i, width(), i);
+	}
+
+	p.setPen(originAxes);
+	p.drawLine(origin.x(), 0, origin.x(), height());
+	p.drawLine(0, origin.y(), width(), origin.y());
+
 }
 
 
@@ -38,7 +75,9 @@ void CanvasView::paintEvent(QPaintEvent* e)
 	QPainter p(this);
 	QRect r = e->rect();
 
-	p.fillRect(r, Qt::darkGray);
+	p.fillRect(r, QColor{23, 32, 48});
+
+	drawGrid(p);
 
 	//drawing->draw(p);
 
@@ -49,10 +88,6 @@ void CanvasView::paintEvent(QPaintEvent* e)
 	for (const auto& s : drawing->shapes) {
 		drw(s.get(), p);
 	}
-
-	auto b = QBrush(Qt::red);
-	p.setBrush(b);
-	p.drawEllipse(width() / 2-2, height() / 2-2, 4, 4);
 }
 
 void CanvasView::mousePressEvent(QMouseEvent* e)
