@@ -63,9 +63,12 @@ void CanvasView::drawGrid(QPainter& p)
 
 
 
-	/*static*/ std::vector<QLine> fineGrid;
-	/*static*/ std::vector<QLine> mainGrid;
+	static std::vector<QLine> fineGrid;
+	static std::vector<QLine> mainGrid;
 	//static std::vector<QLine> originAxes;
+
+	fineGrid.clear();
+	mainGrid.clear();
 
 	int vertInitPoint = origin.x() % mainStep;
 	int horInitPoint = origin.y() % mainStep;
