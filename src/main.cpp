@@ -1,4 +1,5 @@
 #include <iostream>
+#include <exception>
 
 #include <QApplication>
 
@@ -6,9 +7,10 @@
 
 
 
-
 int main(int argc, char* argv[]) {
-	std::cout << "Imushave lamazo\n";
+
+	std::set_terminate([] { std::cerr << "Unhandled exception occured\n"; abort(); });
+
 
 	QApplication app(argc, argv);
 

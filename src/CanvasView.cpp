@@ -7,6 +7,37 @@
 #include <QPaintEvent>
 #include <QMouseEvent>
 
+int findStepSize(double zoomRatio)
+{
+	int minSize = 50;
+	int maxSize = 300;
+
+
+	double unitSize = 1;
+	//int v = std::log10(unitSize);
+	//unitSize = std::pow(10, v);
+
+
+	//if (unitSize > 60) unitSize /= 10;
+	//if (unitSize < 10)  unitSize *= 10;
+	double stepUnscaled = unitSize * 100;
+	int stepSize = stepUnscaled * zoomRatio;
+	
+	if (stepSize > maxSize)
+		while (stepUnscaled > maxSize / zoomRatio)
+			stepUnscaled /= 10;
+	else if (stepSize < minSize)
+		while (stepUnscaled < minSize / zoomRatio)
+			stepUnscaled *= 10;
+
+	stepSize = stepUnscaled * zoomRatio;
+
+
+
+
+	return stepSize;
+}
+
 void CanvasView::drw(Shape* s, QPainter& p)
 {
 	if (s->type() == Shape_t::circle) {
@@ -25,29 +56,40 @@ void CanvasView::drawGrid(QPainter& p)
 	auto mainGridLines = QColor(63, 72, 88);
 	auto fineGridLines = QColor(33, 42, 58);
 
-	int mainStep = 100;
+	int mainStep = findStepSize(zoomRatio);
 	int fineStep = mainStep / 5;
 	
 	auto origin = fromDrawing({ 0, 0 });
 
+
+
+	/*static*/ std::vector<QLine> fineGrid;
+	/*static*/ std::vector<QLine> mainGrid;
+	//static std::vector<QLine> originAxes;
+
 	int vertInitPoint = origin.x() % mainStep;
 	int horInitPoint = origin.y() % mainStep;
 	
-	p.setPen(fineGridLines);
 	for (int i = vertInitPoint; i < width() ; i += fineStep) {
-		p.drawLine(i, 0, i, height());
+		fineGrid.emplace_back(i, 0, i, height());
 	}
 	for (int i = horInitPoint; i < height() ; i += fineStep) {
-		p.drawLine(0, i, width(), i);
+		fineGrid.emplace_back(0, i, width(), i);
 	}
 
-	p.setPen(mainGridLines);
 	for (int i = vertInitPoint; i < width() ; i += mainStep) {
-		p.drawLine(i, 0, i, height());
+		mainGrid.emplace_back(i, 0, i, height());
 	}
 	for (int i = horInitPoint; i < height() ; i += mainStep) {
-		p.drawLine(0, i, width(), i);
+		mainGrid.emplace_back(0, i, width(), i);
 	}
+	
+	p.setPen(fineGridLines);
+	p.drawLines(&fineGrid[0], fineGrid.size());
+
+	p.setPen(mainGridLines);
+	p.drawLines(&mainGrid[0], mainGrid.size());
+
 
 	p.setPen(originAxes);
 	p.drawLine(origin.x(), 0, origin.x(), height());
@@ -56,18 +98,19 @@ void CanvasView::drawGrid(QPainter& p)
 }
 
 
-CanvasView::CanvasView(QWidget* parent)
+CanvasView::CanvasView(QWidget* parent) : QWidget(parent)
 {
 	setMouseTracking(true);
 
 	drawing = std::make_unique<Drawing>();
 		std::unique_ptr<Shape> circle = std::make_unique<Circle>(Point{ 0, 0 });
-		circle->setNextNode({ 0, 30 });
+		circle->setNextNode({ 0, 100 });
 		drawing->add(circle);
 	
 	offset.setX(width() / 2);
 	offset.setY(height() / 2);
 
+	zoomRatio = 1;
 }
 
 void CanvasView::paintEvent(QPaintEvent* e)
@@ -88,6 +131,14 @@ void CanvasView::paintEvent(QPaintEvent* e)
 	for (const auto& s : drawing->shapes) {
 		drw(s.get(), p);
 	}
+
+	Point coords = toDrawing(lastPos);
+	QString c = "X: " + QString::number(coords.x) + "\tY: " + QString::number(coords.y) + "\tOffset " + 
+				QString::number(offset.x()) + ", " + QString::number(offset.y()) + "\tZoom: " + QString::number(zoomRatio);
+	QString s = "Screen coordinates (actual): " + QString::number(lastPos.x()) + ", " + QString::number(lastPos.y()) +
+				"\tconverted: " + QString::number(fromDrawing(coords).x()) + ", " + QString::number(fromDrawing(coords).y());
+	p.drawText(QPoint(5,15), c);
+	p.drawText(QPoint(5, 30), s);
 }
 
 void CanvasView::mousePressEvent(QMouseEvent* e)
@@ -138,7 +189,7 @@ void CanvasView::mouseMoveEvent(QMouseEvent* e)
 
 void CanvasView::resizeEvent(QResizeEvent* e)
 {
-	zoomRatio = 2;
+	
 }
 
 void CanvasView::wheelEvent(QWheelEvent* e)
@@ -158,8 +209,8 @@ void CanvasView::wheelEvent(QWheelEvent* e)
 
 Point CanvasView::toDrawing(const QPoint& pointOnScreen)
 {	
-	return Point{ -offset.x() + 1. * pointOnScreen.x() / zoomRatio,
-				  offset.y() / 2 - 1. * pointOnScreen.y() / zoomRatio };
+	return Point{ -offset.x() / zoomRatio + 1. * pointOnScreen.x() / zoomRatio,
+				  offset.y() / zoomRatio - 1. * pointOnScreen.y() / zoomRatio };
 }
 
 QPoint CanvasView::fromDrawing(const Point& drawingPoint)
